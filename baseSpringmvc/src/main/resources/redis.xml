@@ -1,0 +1,20 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+    <bean name="genericObjectPoolConfig" class="org.apache.commons.pool2.impl.GenericObjectPoolConfig" >
+        <property name="maxWaitMillis" value="${REDIS_MAXWAITMILLIS}" />
+        <property name="maxTotal" value="${REDIS_MAXTOTAL}" />
+        <property name="minIdle" value="${REDIS_MINIDLE}" />
+        <property name="maxIdle" value="${REDIS_MAXIDLE}" />
+        <property name="testOnBorrow" value="true"></property>
+    </bean>
+
+    <bean id="jedisCluster" class="com.zzh.util.JedisClusterFactory">
+        <property name="address" value="${REDIS_ADDRESS}"/>
+        <property name="timeout" value="${REDIS_CONNECTIONTIMEOUT}" />
+        <property name="maxRedirections" value="${REDIS_MAXREDIRECTIONS}" />
+        <property name="genericObjectPoolConfig" ref="genericObjectPoolConfig" />
+        
+    </bean>
+</beans>

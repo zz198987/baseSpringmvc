@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	    http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd">
+
+		<context:component-scan base-package="com.zzh.component"/>
+
+
+		<!-- 数据源链接 -->
+		<bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource" destroy-method="close">
+	        <property name="driverClassName" value="${jdbc.driver}" />
+	        <property name="url" value="${jdbc.url}" />
+	        <property name="username" value="${jdbc.username}" />
+	        <property name="password" value="${jdbc.password}" />
+	        <property name="maxActive" value="${jdbc.pool.maxActive}" />
+	        <property name="maxIdle" value="${jdbc.pool.maxIdle}" />
+	        <property name="defaultAutoCommit" value="false" />
+	        <property name="testOnBorrow" value="${jdbc.pool.testOnBorrow}" />
+	        <property name="validationQuery" value="SELECT 1 FROM DUAL" />
+	        <!-- 连接Idle一个小时后超时 -->
+	        <property name="timeBetweenEvictionRunsMillis" value="${jdbc.pool.timeBetweenEvictionRunsMillis}" />
+	        <property name="minEvictableIdleTimeMillis" value="${jdbc.pool.minEvictableIdleTimeMillis}" />
+    	</bean>
+    	
+    	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->  
+	    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+	        <property name="dataSource" ref="dataSource" />  
+	        <!-- 自动扫描mapping.xml文件 -->  
+	        <property name="mapperLocations" value="classpath:/mapper/*.xml"></property>
+	        <property name="typeAliasesPackage" value="com.zzh.model" />
+	         <property  name="configLocation"  value="classpath:configuration.xml"/>
+	        <property name="plugins">
+			    <array>
+			      <bean class="com.github.pagehelper.PageHelper">
+			        <property name="properties">
+			          <!--使用下面的方式配置参数，一行配置一个 -->
+			          <value>
+			            offsetAsPageNum=false
+			          </value>
+					</property>
+			      </bean>
+			    </array>
+			  </property>
+	    </bean> 
+	    
+		<!-- repository接口所在包名，Spring会自动查找其下的类 -->  
+	    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">  
+	        <property name="basePackage" value="com.zzh.component.dao" />
+	        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>  
+	    </bean> 
+	    
+    	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+        	<property name="dataSource" ref="dataSource" />  
+    	</bean>  
+   	 	
+   	 	<!-- 注解事务 -->
+   	 	<tx:annotation-driven transaction-manager="transactionManager"/>
+</beans>
